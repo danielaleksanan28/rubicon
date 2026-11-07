@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Рубикон — ремонт техники у метро Хорошёво</title>
+<meta name="description" content="Компонентный ремонт бытовой техники и электроники у метро Хорошёво: телевизоры, кофемашины, роботы-пылесосы, парогенераторы, микроволновки. Гарантия от полугода. Новохорошёвский проезд, 18.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Макет: мастерская у метро — тёмная «паяльная» шапка с фото мастера, дальше светлые разделы на всю ширину,
+   у каждого внутренняя колонка до 1120px. Акцент — фиолетовый из фирменного цвета Рубикона, жёлтый — как их павильон. */
+:root{
+  --bg:#f5f4f9; --surface:#ffffff; --ink:#17151f; --muted:#5d596b; --line:#e2dfeb;
+  --accent:#5b43f0; --accent-ink:#ffffff; --accent-soft:#ece9ff;
+  --yellow:#ffd23f; --yellow-ink:#1d1a10;
+  --hero-bg:#14121b; --hero-ink:#f3f1f8; --hero-muted:#b9b4c9;
+  --ok:#17804a; --err:#b3261e;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#110f17; --surface:#1a1723; --ink:#eeecf5; --muted:#a8a3b8; --line:#2c2838;
+    --accent:#8c7bff; --accent-ink:#110f17; --accent-soft:#25203d;
+    --yellow:#ffd23f; --yellow-ink:#1d1a10;
+    --hero-bg:#0b0a10; --hero-ink:#f3f1f8; --hero-muted:#b9b4c9;
+    --ok:#4cc38a; --err:#ff8a80;
+    color-scheme:dark;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--body);overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:clamp(26px,4vw,38px)}
+h3{font-size:18px;font-weight:500}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.section{padding-block:72px}
+.section-head{display:grid;gap:12px;margin-bottom:36px;max-width:720px}
+.eyebrow{font:500 13px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lead{color:var(--muted);font-size:18px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+/* кнопки */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:999px;
+  font:600 16px/1 var(--body);text-decoration:none;border:2px solid transparent;cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-main{background:var(--yellow);color:var(--yellow-ink)}
+.btn-main:hover{background:#ffdb66}
+.btn-ghost{border-color:rgba(255,255,255,.35);color:var(--hero-ink)}
+.btn-ghost:hover{border-color:var(--hero-ink)}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn svg{width:20px;height:20px;flex:none}
+
+/* полоса «черновик» */
+.draft{background:var(--accent);color:var(--accent-ink);font-size:14px;line-height:1.4}
+.draft .wrap{padding-block:9px;display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;text-align:center}
+.draft b{font-weight:600}
+
+/* шапка */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(20,18,27,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--hero-ink);border-bottom:1px solid rgba(255,255,255,.08)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#14121b}
+.top .wrap{display:flex;align-items:center;gap:20px;min-height:68px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;margin-right:auto}
+.brand img{width:42px;height:42px;border-radius:10px}
+.brand b{font:700 18px/1 var(--display);letter-spacing:.02em}
+.brand small{display:block;font:400 12px/1.3 var(--body);color:var(--hero-muted);margin-top:4px}
+.nav{display:flex;gap:22px}
+.nav a{text-decoration:none;color:var(--hero-muted);font-size:15px}
+.nav a:hover{color:var(--hero-ink)}
+.top-phone{font:600 16px/1 var(--body);text-decoration:none;white-space:nowrap}
+.top-phone span{display:block;font:400 12px/1.3 var(--body);color:var(--hero-muted);margin-top:4px;text-align:right}
+@media (max-width:900px){.nav{display:none}}
+@media (max-width:560px){.top-phone span{display:none}.brand small{display:none}.top-phone{font-size:15px}}
+
+/* герой */
+.hero{background:var(--hero-bg);color:var(--hero-ink);position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;padding-block:64px 72px}
+.hero h1{font-size:clamp(30px,4.4vw,52px);font-weight:700}
+.hero h1 em{font-style:normal;color:var(--yellow)}
+.hero-text{display:grid;gap:24px;min-width:0}
+.hero .lead{color:var(--hero-muted);max-width:560px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px}
+.ratings{display:flex;flex-wrap:wrap;gap:10px}
+.rating{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid rgba(255,255,255,.14);border-radius:12px;text-decoration:none;font-size:14px;color:var(--hero-muted)}
+.rating:hover{border-color:rgba(255,255,255,.4)}
+.rating b{font:700 20px/1 var(--display);color:var(--hero-ink)}
+.stars{color:var(--yellow);letter-spacing:1px}
+.hero-photo{position:relative;min-width:0}
+.hero-photo img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:20px}
+.chip{position:absolute;left:-18px;bottom:24px;background:var(--surface);color:var(--ink);border-radius:14px;padding:14px 18px;box-shadow:0 18px 40px rgba(0,0,0,.35);display:grid;gap:2px;max-width:260px}
+.chip small{font:500 12px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chip b{font:700 18px/1.2 var(--display)}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:36px;padding-block:44px 52px}.chip{left:12px;bottom:12px}}
+
+/* акция */
+.promo{background:var(--yellow);color:var(--yellow-ink)}
+.promo .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding-block:20px}
+.promo-tag{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:7px 12px;flex:none}
+.promo p{font-weight:500;flex:1 1 320px}
+.promo p b{font-family:var(--display);font-weight:700}
+.promo a{font-weight:600;white-space:nowrap}
+
+/* услуги */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:10px;align-content:start}
+.card .ico{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.card .ico svg{width:24px;height:24px}
+.card p{color:var(--muted);font-size:15.5px}
+.card .price{font:500 13px/1.3 var(--mono);color:var(--ink);border-top:1px dashed var(--line);padding-top:12px;margin-top:4px}
+.services-note{margin-top:20px;color:var(--muted);font-size:15px}
+.services-note a{color:var(--accent);font-weight:600}
+
+/* почему мы */
+.why{background:var(--surface);border-block:1px solid var(--line)}
+.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+@media (max-width:900px){.why-grid{grid-template-columns:1fr;gap:32px}}
+.why-list{display:grid;gap:18px;margin:0;padding:0;list-style:none}
+.why-list li{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}
+.why-list .ico{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.why-list .ico svg{width:22px;height:22px}
+.why-list b{display:block;font-weight:600;margin-bottom:2px}
+.why-list span{color:var(--muted);font-size:15.5px}
+.quote{border-left:3px solid var(--yellow);padding:6px 0 6px 18px;margin-top:28px;color:var(--muted);font-size:16px}
+.quote q{color:var(--ink);font-weight:500;quotes:"«" "»"}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+.photos img{width:100%;height:100%;object-fit:cover;border-radius:var(--r);aspect-ratio:4/3}
+.photos .wide{grid-column:1/-1;aspect-ratio:16/9}
+
+/* как работаем */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;counter-reset:s;margin:0;padding:0;list-style:none}
+@media (max-width:900px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:8px;align-content:start}
+.steps li::before{counter-increment:s;content:"0" counter(s);font:500 14px/1 var(--mono);color:var(--accent)}
+.steps p{color:var(--muted);font-size:15.5px}
+
+/* отзывы */
+.reviews-top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px 32px;margin-bottom:28px}
+.reviews-top .section-head{margin-bottom:0}
+.score{display:flex;align-items:center;gap:14px}
+.score b{font:700 48px/1 var(--display)}
+.score span{color:var(--muted);font-size:14px;line-height:1.4}
+.revs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:700px){.revs{grid-template-columns:1fr}}
+.rev{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:12px;align-content:start}
+.rev-head{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted)}
+.rev-head b{color:var(--ink);font-size:16px}
+.rev p{font-size:16.5px}
+.rev .stars{font-size:15px}
+.reviews-links{margin-top:20px;display:flex;flex-wrap:wrap;gap:10px 24px;font-size:15px}
+.reviews-links a{color:var(--accent);font-weight:600}
+
+/* заявка */
+.order{background:var(--hero-bg);color:var(--hero-ink)}
+.order-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:start}
+@media (max-width:900px){.order-grid{grid-template-columns:1fr;gap:32px}}
+.order .lead{color:var(--hero-muted)}
+.order .eyebrow{color:var(--yellow)}
+.alt{display:grid;gap:12px;margin-top:28px}
+.alt a{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid rgba(255,255,255,.14);border-radius:12px;text-decoration:none}
+.alt a:hover{border-color:rgba(255,255,255,.4)}
+.alt svg{width:24px;height:24px;flex:none}
+.alt small{display:block;color:var(--hero-muted);font-size:13px}
+form{background:var(--surface);color:var(--ink);border-radius:20px;padding:28px;display:grid;gap:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.row2{grid-template-columns:1fr}form{padding:20px}}
+.field{display:grid;gap:6px;min-width:0}
+.field label{font-weight:600;font-size:15px}
+.field label i{font-style:normal;color:var(--accent)}
+input[type=text],input[type=tel],select,textarea{width:100%;font:400 16px/1.4 var(--body);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:13px 14px}
+textarea{resize:vertical;min-height:96px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.invalid{border-color:var(--err)!important}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);line-height:1.45}
+.check input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.check a{color:var(--accent)}
+.trap{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+form .btn{width:100%}
+form .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+.msg{border-radius:10px;padding:14px 16px;font-size:15px}
+.msg-ok{background:rgba(23,128,74,.12);color:var(--ok)}
+.msg-err{background:rgba(179,38,30,.1);color:var(--err)}
+.msg b{display:block;font-size:16px;margin-bottom:2px}
+.form-note{font-size:13px;color:var(--muted)}
+
+/* контакты */
+.contacts-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;align-items:stretch}
+@media (max-width:900px){.contacts-grid{grid-template-columns:1fr}}
+.info{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px;display:grid;gap:20px;align-content:start}
+.info dl{margin:0;display:grid;gap:16px}
+.info dt{font:500 12px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.info dd{margin:0;font-size:17px}
+.info dd a{text-decoration:none;font-weight:600}
+.hours{display:grid;grid-template-columns:auto 1fr;gap:2px 16px;font-variant-numeric:tabular-nums}
+.map{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);min-height:360px;background:var(--surface);position:relative}
+.map iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.place{margin-top:16px;border-radius:var(--r);overflow:hidden}
+.place img{width:100%;aspect-ratio:3/1;object-fit:cover}
+.place figcaption{font-size:14px;color:var(--muted);padding-top:8px}
+
+/* политика и подвал */
+.policy{border-top:1px solid var(--line)}
+.policy details{max-width:820px}
+.policy summary{cursor:pointer;font-weight:600;font-size:17px}
+.policy .text{display:grid;gap:10px;margin-top:16px;color:var(--muted);font-size:15px}
+footer{background:var(--hero-bg);color:var(--hero-muted);font-size:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 32px;padding-block:28px}
+footer b{color:var(--hero-ink)}
+@media (min-width:901px){footer{padding-bottom:0}}
+
+/* нижняя панель на телефоне */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:25;display:none;gap:10px;background:rgba(20,18,27,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));border-top:1px solid rgba(255,255,255,.1)}
+.dock .btn{flex:1;min-height:48px;padding:0 12px;font-size:15px}
+@media (max-width:900px){.dock{display:flex}}
+</style>
+</head>
+<body>
+
+<div class="draft" role="note">
+  <div class="wrap"><span><b>Черновик сайта для «Рубикона»</b>. Тексты, фото и отзывы взяты с вашей страницы на Яндекс Картах.</span><span>Форма работает: пока заявки приходят мне для проверки, после запуска будут приходить вам в Telegram.</span></div>
+</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Рубикон, на главную">
+      <img src="img/logo.png" alt="" width="42" height="42">
+      <span><b>РУБИКОН</b><small>Ремонт техники у метро Хорошёво</small></span>
+    </a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#uslugi">Что чиним</a>
+      <a href="#kak">Как работаем</a>
+      <a href="#otzyvy">Отзывы</a>
+      <a href="#kontakty">Контакты</a>
+    </nav>
+    <a class="top-phone" href="tel:+79614365397">+7 961 436-53-97<span>Пн–Пт, 10:00–19:00</span></a>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-text">
+      <span class="eyebrow" style="color:var(--yellow)">Компонентный ремонт · Новохорошёвский проезд, 18</span>
+      <h1>Чиним технику <em>с&nbsp;точностью до&nbsp;детали</em></h1>
+      <p class="lead">Ремонтируем бытовую технику и электронику у метро Хорошёво. Находим и восстанавливаем именно неисправный элемент, без замены целого модуля. И честно скажем, если чинить невыгодно и проще купить новое.</p>
+      <div class="hero-actions">
+        <a class="btn btn-main" href="#zayavka">Оставить заявку</a>
+        <a class="btn btn-ghost" href="tel:+79614365397">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+          Позвонить
+        </a>
+      </div>
+      <div class="ratings">
+        <a class="rating" href="https://yandex.ru/maps/org/11031769817/reviews/" target="_blank" rel="noopener"><b>4,9</b><span><span class="stars" aria-hidden="true">★★★★★</span><br>131 отзыв на Яндекс Картах</span></a>
+        <a class="rating" href="https://2gis.ru/moscow/firm/70000001066324853" target="_blank" rel="noopener"><b>4,9</b><span><span class="stars" aria-hidden="true">★★★★★</span><br>139 оценок в 2ГИС</span></a>
+      </div>
+    </div>
+    <div class="hero-photo">
+      <img src="img/master.jpg" alt="Мастер Рубикона ремонтирует плату за рабочим столом" width="1280" height="960">
+      <div class="chip"><small>Гарантия на ремонт</small><b>от полугода</b></div>
+    </div>
+  </div>
+</section>
+
+<section class="promo" aria-label="Акция">
+  <div class="wrap">
+    <span class="promo-tag">Акция до 31.12</span>
+    <p><b>Первый раз у нас?</b> Диагностика бесплатно, если ремонтируем, и выгода 20% на детали.</p>
+    <a href="#zayavka">Записаться →</a>
+  </div>
+</section>
+
+<section class="section" id="uslugi">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Что чиним</span>
+      <h2>Бытовая техника и электроника</h2>
+      <p class="lead">Если вашей техники нет в списке, напишите или позвоните: скорее всего, тоже возьмёмся.</p>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+        <h3>Телевизоры</h3>
+        <p>Нет изображения или звука, не включается, полосы на экране, проблемы с подсветкой.</p>
+        <span class="price">Стоимость — после диагностики</span>
+      </article>
+      <article class="card">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h12v6a6 6 0 0 1-12 0z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17M8 2v3M11 2v3M14 2v3"/></svg></span>
+        <h3>Кофемашины</h3>
+        <p>Не греет, не подаёт воду, течёт, выдаёт ошибку, плохо взбивает молоко.</p>
+        <span class="price">Стоимость — после диагностики</span>
+      </article>
+      <article class="card">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3"/></svg></span>
+        <h3>Роботы-пылесосы и пылесосы</h3>
+        <p>Не заряжается, не едет, не видит базу, слабо тянет, шумит двигатель.</p>
+        <span class="price">Стоимость — после диагностики</span>
+      </article>
+      <article class="card">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17h14l3-6a4 4 0 0 0-4-4H9a6 6 0 0 0-6 6z"/><path d="M7 21h10M9 3c0 1 1 1 1 2s-1 1-1 2M13 3c0 1 1 1 1 2s-1 1-1 2"/></svg></span>
+        <h3>Парогенераторы и утюги</h3>
+        <p>Нет пара, не греет подошва, течёт вода, срабатывает защита.</p>
+        <span class="price">Стоимость — после диагностики</span>
+      </article>
+      <article class="card">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h9v6H6zM18 9v.01M18 12v.01M18 15v.01"/></svg></span>
+        <h3>Микроволновые печи</h3>
+        <p>Работает, но не греет, искрит, не крутится тарелка, не реагирует на кнопки.</p>
+        <span class="price">Стоимость — после диагностики</span>
+      </article>
+      <article class="card">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><circle cx="12" cy="6.5" r="1"/></svg></span>
+        <h3>Аудио- и видеотехника</h3>
+        <p>Колонки, усилители, музыкальные центры: нет звука, хрипит, не включается.</p>
+        <span class="price">Стоимость — после диагностики</span>
+      </article>
+    </div>
+    <p class="services-note">А ещё чайники и другую мелкую технику. Не знаете, что сломалось? Опишите, как ведёт себя техника, в <a href="#zayavka">заявке</a>, и мастер подскажет.</p>
+  </div>
+</section>
+
+<section class="section why" id="o-nas">
+  <div class="wrap why-grid">
+    <div>
+      <div class="section-head">
+        <span class="eyebrow">Почему нам доверяют</span>
+        <h2>Мастерская, а не приёмный пункт</h2>
+      </div>
+      <ul class="why-list">
+        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><div><b>Гарантия от полугода</b><span>Отвечаем за свою работу и после ремонта.</span></div></li>
+        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.8-.7-.7-2.8z"/></svg></span><div><b>Ремонт на уровне компонентов</b><span>Меняем сгоревшую деталь, а не весь блок.</span></div></li>
+        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><div><b>Выезд на дом</b><span>Если технику неудобно везти, мастер приедет сам.</span></div></li>
+        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span><div><b>Оплата картой</b><span>И подарочные сертификаты, если хотите порадовать близких.</span></div></li>
+      </ul>
+      <p class="quote">Как мы сами о себе говорим: <q>Любим запах припоя по утру. Совесть и руки из плеч в наличии.</q></p>
+    </div>
+    <div class="photos">
+      <img class="wide" src="img/bench.jpg" alt="Рабочее место мастера: паяльная станция, приборы и робот-пылесос на ремонте" width="1280" height="960" loading="lazy">
+      <img src="img/parogen.jpg" alt="Парогенератор на ремонте в мастерской" width="1280" height="853" loading="lazy">
+      <img src="img/vacuum.jpg" alt="Пылесос в мастерской Рубикона" width="1280" height="853" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="section" id="kak">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Как работаем</span>
+      <h2>От заявки до работающей техники</h2>
+    </div>
+    <ol class="steps">
+      <li><h3>Заявка или звонок</h3><p>Оставьте заявку на сайте, позвоните или напишите в Telegram и WhatsApp.</p></li>
+      <li><h3>Привозите или вызываете мастера</h3><p>Приходите на Новохорошёвский проезд, 18, или мастер приедет к вам домой.</p></li>
+      <li><h3>Диагностика и честная цена</h3><p>Находим причину и называем стоимость до начала работ. Если ремонт невыгоден, так и скажем.</p></li>
+      <li><h3>Ремонт и гарантия</h3><p>Восстанавливаем неисправный элемент и даём гарантию от полугода.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section why" id="otzyvy">
+  <div class="wrap">
+    <div class="reviews-top">
+      <div class="section-head">
+        <span class="eyebrow">Отзывы</span>
+        <h2>Что пишут клиенты</h2>
+      </div>
+      <div class="score"><b>4,9</b><span><span class="stars" aria-hidden="true">★★★★★</span><br>131 отзыв на Яндекс Картах</span></div>
+    </div>
+    <div class="revs">
+      <article class="rev">
+        <div class="rev-head"><b>Гайка</b><span>28 октября · Яндекс Карты</span></div>
+        <span class="stars" aria-label="5 из 5">★★★★★</span>
+        <p>«Обращалась по рекомендации и не пожалела! Спасибо большое, что починили мой телевизор самсунг.»</p>
+      </article>
+      <article class="rev">
+        <div class="rev-head"><b>Мариана</b><span>20 октября · Яндекс Карты</span></div>
+        <span class="stars" aria-label="5 из 5">★★★★★</span>
+        <p>«Обратилась для ремонта парогенератора Philips, быстро реанимировали моего домашнего помощника.»</p>
+      </article>
+      <article class="rev">
+        <div class="rev-head"><b>Николай П.</b><span>23 октября · Яндекс Карты</span></div>
+        <span class="stars" aria-label="5 из 5">★★★★★</span>
+        <p>«Починили прямо при мне. Быстро и дёшево, рекомендую.»</p>
+      </article>
+      <article class="rev">
+        <div class="rev-head"><b>Dari</b><span>21 сентября · Яндекс Карты</span></div>
+        <span class="stars" aria-label="5 из 5">★★★★★</span>
+        <p>«Отдавала полуразваленный электрический чайник. Так тут и подсветку починили, и крышечку, и почистили. Как новый))»</p>
+      </article>
+    </div>
+    <div class="reviews-links">
+      <a href="https://yandex.ru/maps/org/11031769817/reviews/" target="_blank" rel="noopener">Все отзывы на Яндекс Картах →</a>
+      <a href="https://2gis.ru/moscow/firm/70000001066324853" target="_blank" rel="noopener">Отзывы в 2ГИС →</a>
+    </div>
+  </div>
+</section>
+
+<section class="section order" id="zayavka">
+  <div class="wrap order-grid">
+    <div>
+      <div class="section-head">
+        <span class="eyebrow">Заявка на ремонт</span>
+        <h2>Расскажите, что сломалось</h2>
+        <p class="lead">Мастер перезвонит в рабочее время, уточнит детали и подскажет, сколько примерно будет стоить ремонт.</p>
+      </div>
+      <div class="alt">
+        <a href="tel:+79614365397">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+          <span>+7 961 436-53-97<small>Позвонить</small></span>
+        </a>
+        <a href="https://telegram.me/+79250924773" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 3-20 8 7 2 2 7 4-5 5 4z"/><path d="m9 13 6-5"/></svg>
+          <span>Telegram<small>+7 925 092-47-73</small></span>
+        </a>
+        <a href="https://wa.me/79250924773" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.7-5A9 9 0 1 1 8 19.3z"/><path d="M9 10c0 3 2 5 5 5l1-1.5-2-1-1 1c-1-.5-1.5-1-2-2l1-1-1-2z"/></svg>
+          <span>WhatsApp<small>+7 925 092-47-73</small></span>
+        </a>
+      </div>
+    </div>
+
+    <form id="order-form" novalidate>
+      <div class="row2">
+        <div class="field">
+          <label for="f-name">Ваше имя <i>*</i></label>
+          <input id="f-name" name="name" type="text" autocomplete="name" maxlength="80" required>
+        </div>
+        <div class="field">
+          <label for="f-phone">Телефон <i>*</i></label>
+          <input id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7 900 000-00-00" maxlength="30" required>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="f-device">Что за техника</label>
+          <select id="f-device" name="device">
+            <option value="">Выберите</option>
+            <option>Телевизор</option>
+            <option>Кофемашина</option>
+            <option>Робот-пылесос или пылесос</option>
+            <option>Парогенератор или утюг</option>
+            <option>Микроволновая печь</option>
+            <option>Аудио- или видеотехника</option>
+            <option>Другое</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-where">Где удобнее</label>
+          <select id="f-where" name="where">
+            <option>Привезу в мастерскую</option>
+            <option>Нужен выезд на дом</option>
+            <option>Пока не знаю</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-msg">Что случилось</label>
+        <textarea id="f-msg" name="message" rows="3" maxlength="1000" placeholder="Например: телевизор Samsung включается, но нет изображения"></textarea>
+      </div>
+      <div class="trap" aria-hidden="true"><label for="f-site">Сайт</label><input id="f-site" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+      <label class="check" for="f-consent"><input id="f-consent" type="checkbox"> <span>Согласен на обработку персональных данных по <a href="#politika" id="policy-link">политике конфиденциальности</a></span></label>
+      <button class="btn btn-accent" type="submit" id="f-submit">Отправить заявку</button>
+      <div class="msg msg-ok" id="f-ok" role="status" hidden><b>Заявка отправлена!</b>Мастер перезвонит вам в рабочее время: пн–пт, 10:00–19:00.</div>
+      <div class="msg msg-err" id="f-err" role="alert" hidden></div>
+      <p class="form-note">Нажимая кнопку, вы отправляете заявку мастерской «Рубикон». Мы не передаём ваши данные третьим лицам.</p>
+    </form>
+  </div>
+</section>
+
+<section class="section" id="kontakty">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Контакты</span>
+      <h2>Как нас найти</h2>
+    </div>
+    <div class="contacts-grid">
+      <div class="info">
+        <dl>
+          <div><dt>Адрес</dt><dd>Москва, Новохорошёвский проезд, 18<br><span style="color:var(--muted);font-size:15px">рядом с метро Хорошёво</span></dd></div>
+          <div><dt>Телефон</dt><dd><a href="tel:+79614365397">+7 961 436-53-97</a></dd></div>
+          <div><dt>Telegram и WhatsApp</dt><dd><a href="https://telegram.me/+79250924773" target="_blank" rel="noopener">Telegram</a> · <a href="https://wa.me/79250924773" target="_blank" rel="noopener">WhatsApp</a><br><span style="color:var(--muted);font-size:15px">+7 925 092-47-73</span></dd></div>
+          <div><dt>Часы работы</dt><dd class="hours"><span>Пн–Пт</span><span>10:00–19:00</span><span>Сб–Вс</span><span>выходной</span></dd></div>
+        </dl>
+        <a class="btn btn-accent" href="https://yandex.ru/maps/org/11031769817/" target="_blank" rel="noopener">Построить маршрут</a>
+      </div>
+      <div>
+        <div class="map">
+          <iframe src="https://yandex.ru/map-widget/v1/?ll=37.494034%2C55.778325&amp;z=16&amp;pt=37.494034%2C55.778325%2Cpm2vlm" title="Рубикон на карте: Новохорошёвский проезд, 18" loading="lazy" allowfullscreen></iframe>
+        </div>
+        <figure class="place" style="margin-inline:0;margin-bottom:0">
+          <img src="img/outside.jpg" alt="Жёлтый павильон «Ремонт бытовой техники» у дома 18 по Новохорошёвскому проезду" width="1280" height="428" loading="lazy">
+          <figcaption>Ориентир: жёлтый павильон «Ремонт бытовой техники».</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section policy" id="politika">
+  <div class="wrap">
+    <details id="policy-details">
+      <summary>Политика обработки персональных данных</summary>
+      <div class="text">
+        <p>Оператор персональных данных: ИП Слович Артём Миланович, ИНН 312836086626, ОГРНИП 326930100012590.</p>
+        <p>Через форму на сайте мы получаем имя, телефон и описание неисправности, которые вы указали сами. Эти данные нужны только для того, чтобы связаться с вами по заявке и провести ремонт.</p>
+        <p>Мы не передаём данные третьим лицам, кроме случаев, предусмотренных законом. Данные хранятся до выполнения заявки или до вашего отзыва согласия.</p>
+        <p>Чтобы отозвать согласие или удалить данные, позвоните по номеру +7 961 436-53-97 или напишите нам в Telegram.</p>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><b>Рубикон</b> · ремонт бытовой техники и электроники · Москва, Новохорошёвский проезд, 18</span>
+    <span>ИП Слович А. М. · ОГРНИП 326930100012590</span>
+  </div>
+</footer>
+
+<div class="dock">
+  <a class="btn btn-ghost" href="tel:+79614365397">Позвонить</a>
+  <a class="btn btn-main" href="#zayavka">Заявка</a>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // Заявка уходит в Google Форму → таблица → уведомление в Telegram (проверенная цепочка AI-Lead-Automation).
+  var FORM = {
+    action: 'https://docs.google.com/forms/d/e/1FAIpQLSfGQPrLjlalCdzpZUBgwz0_o7kiT8V54xSSaoLxki2TaOrBeA/formResponse',
+    name: 'entry.1984815170',
+    contact: 'entry.838847799',
+    service: 'entry.1938603320',
+    message: 'entry.749977078'
+  };
+  var form = document.getElementById('order-form');
+  var ok = document.getElementById('f-ok'), err = document.getElementById('f-err'), btn = document.getElementById('f-submit');
+  var nameEl = document.getElementById('f-name'), phoneEl = document.getElementById('f-phone');
+
+  function fail(text, el) {
+    err.textContent = text; err.hidden = false;
+    if (el) { el.classList.add('invalid'); el.focus(); }
+  }
+  [nameEl, phoneEl].forEach(function (el) { el.addEventListener('input', function () { el.classList.remove('invalid'); }); });
+
+  document.getElementById('policy-link').addEventListener('click', function () {
+    document.getElementById('policy-details').open = true;
+  });
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    ok.hidden = true; err.hidden = true;
+    var name = nameEl.value.trim(), phone = phoneEl.value.trim();
+    var digits = phone.replace(/\D/g, '');
+    if (!name) return fail('Напишите, как к вам обращаться.', nameEl);
+    if (digits.length < 10 || digits.length > 15) return fail('Проверьте номер телефона: нужно не меньше 10 цифр.', phoneEl);
+    if (!document.getElementById('f-consent').checked) return fail('Отметьте согласие на обработку персональных данных.');
+    if (document.getElementById('f-site').value) { ok.hidden = false; form.reset(); return; } // бот
+
+    var device = document.getElementById('f-device').value || 'не указана';
+    var where = document.getElementById('f-where').value;
+    var text = document.getElementById('f-msg').value.trim();
+    var message = 'Заявка с сайта «Рубикон». Техника: ' + device + '. ' + where + '.' + (text ? ' Что случилось: ' + text : '');
+
+    var p = new URLSearchParams();
+    p.append(FORM.name, name);
+    p.append(FORM.contact, phone);
+    p.append(FORM.service, 'Другое');
+    p.append(FORM.message, message);
+
+    btn.disabled = true; btn.textContent = 'Отправляем…';
+    fetch(FORM.action, { method: 'POST', mode: 'no-cors', body: p })
+      .then(function () { ok.hidden = false; form.reset(); ok.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); })
+      .catch(function () { fail('Заявка не отправилась. Проверьте интернет и попробуйте ещё раз или позвоните: +7 961 436-53-97.'); })
+      .then(function () { btn.disabled = false; btn.textContent = 'Отправить заявку'; });
+  });
+})();
+</script>
+</body>
+</html>
